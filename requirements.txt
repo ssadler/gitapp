@@ -5,3 +5,4 @@ Werkzeug==0.10.4
 gevent==1.0.2
 tornado==4.2
 mock==1.0.1
+urllib3==1.10.4

@@ -20,10 +20,16 @@ class Commit(object):
         return Branch(self.repo, branch.name)
 
 
+def empty_tree(repo):
+    return repo.get('4b825dc642cb6eb9a060e54bf8d69288fbee4904')
+
+
 class Tree(object):
-    def __init__(self, repo, pygit2_tree):
-        self._tree = pygit2_tree
+    def __init__(self, repo, pygit2_tree=None):
         self.repo = repo
+        if pygit2_tree == None:
+            pygit2_tree = empty_tree(repo)
+        self._tree = pygit2_tree
         self.oid = pygit2_tree.oid
 
     _ERROR = object()
@@ -146,7 +152,12 @@ class Branch(object):
     def __init__(self, repo, branch_name):
         self.ref_name = branch_name
         self.repo = repo
-        _tree = repo.lookup_reference(self.ref_name).peel().tree
+        try:
+            ref = repo.lookup_reference(self.ref_name)
+            _tree = ref.peel().tree
+        except KeyError:
+            # The empty tree
+            _tree = empty_tree(repo)
         self.tree = Tree(repo, _tree)
 
     @classmethod
@@ -159,7 +170,7 @@ class Branch(object):
         return path in self.tree
 
     def __getitem__(self, name):
-        return self.tree[name]
+        return self.tree.get(name)
 
     def __setitem__(self, path, value):
         self.tree = self.tree.set(path, value)
