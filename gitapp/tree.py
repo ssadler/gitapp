@@ -72,6 +72,8 @@ class Tree(object):
         builder = self._get_tree_builder('/'.join(parts))
         if data == None:
             builder.remove(basename)
+        elif type(data) == Tree:
+            builder.insert(basename, data.oid, pygit2.GIT_FILEMODE_TREE)
         else:
             blob_id = self.repo.create_blob(data)
             builder.insert(basename, blob_id, pygit2.GIT_FILEMODE_BLOB)
@@ -105,7 +107,9 @@ class Tree(object):
         return iter(self._tree)
 
     def __eq__(self, other):
-        return self._tree.oid == other._tree.oid
+        if type(other) == type(self):
+            return self._tree.oid == other._tree.oid
+        return False
 
 
 def flatten_tree(tree, prefix=()):
